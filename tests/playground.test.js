@@ -6,7 +6,7 @@ import VueMermaidSteps from '../src'
 vi.mock('../src', () => ({
   default: {
     name: 'VueMermaidSteps',
-    props: ['diagram', 'steps', 'currentStep'],
+    props: ['diagram', 'steps', 'currentStep', 'inactiveOpacity'],
     emits: ['parse-error'],
     template: '<div />',
   },
@@ -19,6 +19,18 @@ function button(wrapper, label) {
 }
 
 describe('playground', () => {
+  it('updates inactive opacity live and resets it with the example', async () => {
+    const wrapper = mount(App)
+    const preview = wrapper.findComponent(VueMermaidSteps)
+    expect(preview.props('inactiveOpacity')).toBe(0.2)
+    await wrapper.get('#inactive-opacity').setValue('0.5')
+    expect(preview.props('inactiveOpacity')).toBe(0.5)
+    expect(wrapper.text()).toContain('Future steps stay at 50% opacity.')
+    await button(wrapper, 'Reset example').trigger('click')
+    expect(preview.props('inactiveOpacity')).toBe(0.2)
+    expect(wrapper.get('#inactive-opacity').element.value).toBe('0.2')
+  })
+
   it('reveals steps with buttons and the slider, respecting boundaries', async () => {
     const wrapper = mount(App)
     const preview = wrapper.findComponent(VueMermaidSteps)

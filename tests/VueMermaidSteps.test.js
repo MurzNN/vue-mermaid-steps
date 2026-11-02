@@ -25,10 +25,14 @@ function createWrapper(props = {}) {
 function expectedDiagram(source, opacities) {
   return [
     source,
-    ...opacities.map(
-      (opacity, index) =>
-        `classDef step${index + 1},step${index + 1}E opacity:${opacity}`,
-    ),
+    ...opacities.flatMap((opacity, index) => {
+      const step = index + 1
+      const ids = ['', ...'abcdefg'].map(suffix => `step${step}E${suffix}`)
+      return [
+        `class ${ids.join(',')} step${step}E`,
+        `classDef step${step},step${step}E opacity:${opacity}`,
+      ]
+    }),
   ].join('\n')
 }
 
@@ -93,6 +97,81 @@ describe('VueMermaidSteps', () => {
     expect(wrapper.findComponent(Renderer).props('value')).toBe(
       expectedDiagram(source, [1, 0.2, 0.2]),
     )
+  })
+
+  it('updates inactive node and edge opacity while keeping revealed steps visible', async () => {
+    const wrapper = createWrapper({ currentStep: 1, inactiveOpacity: 0.5 })
+    expect(wrapper.findComponent(Renderer).props('value')).toBe(
+      expectedDiagram(diagram, [1, 0.5, 0.5]),
+    )
+    await wrapper.setProps({ inactiveOpacity: 0 })
+    expect(wrapper.findComponent(Renderer).props('value')).toBe(
+      expectedDiagram(diagram, [1, 0, 0]),
+    )
+    await wrapper.setProps({ inactiveOpacity: 1 })
+    expect(wrapper.findComponent(Renderer).props('value')).toBe(
+      expectedDiagram(diagram, [1, 1, 1]),
+    )
+  })
+
+  it.each([-0.1, 1.1, NaN, Infinity])('rejects invalid inactive opacity %s', inactiveOpacity => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    try {
+      expect(() => createWrapper({ inactiveOpacity })).toThrow(
+        'inactiveOpacity must be a finite number between 0 and 1',
+      )
+    } finally {
+      warn.mockRestore()
+    }
+  })
+
+  it('maps exactly 8 unique edge IDs per step by default', () => {
+    const wrapper = createWrapper({ steps: 2 })
+    const source = wrapper.findComponent(Renderer).props('value')
+    const mappings = source.split('\n').filter(line => line.startsWith('class '))
+    expect(mappings).toHaveLength(2)
+    for (const [index, mapping] of mappings.entries()) {
+      const step = index + 1
+      const [, ids, className] = mapping.split(' ')
+      expect(className).toBe(`step${step}E`)
+      expect(ids.split(',')).toEqual([
+        `step${step}E`, `step${step}Ea`, `step${step}Eb`, `step${step}Ec`,
+        `step${step}Ed`, `step${step}Ee`, `step${step}Ef`, `step${step}Eg`,
+      ])
+      expect(new Set(ids.split(',')).size).toBe(8)
+    }
+  })
+
+  it('reacts to custom edge counts and extends suffixes beyond z', async () => {
+    const wrapper = createWrapper({ steps: 1, edgesPerStep: 16 })
+    const mappedIds = () => wrapper.findComponent(Renderer).props('value')
+      .split('\n').find(line => line.startsWith('class ')).split(' ')[1].split(',')
+    expect(mappedIds()).toHaveLength(16)
+    expect(mappedIds().at(-1)).toBe('step1Eo')
+    await wrapper.setProps({ edgesPerStep: 29 })
+    expect(mappedIds()).toHaveLength(29)
+    expect(new Set(mappedIds()).size).toBe(29)
+    expect(mappedIds().slice(26)).toEqual(['step1Ez', 'step1Eaa', 'step1Eab'])
+    await wrapper.setProps({ edgesPerStep: 1 })
+    expect(mappedIds()).toEqual(['step1E'])
+  })
+
+  it('disables automatic mappings at zero without changing step opacity', () => {
+    const wrapper = createWrapper({ steps: 1, edgesPerStep: 0 })
+    expect(wrapper.findComponent(Renderer).props('value')).toBe(
+      `${diagram}\nclassDef step1,step1E opacity:0.2`,
+    )
+  })
+
+  it.each([-1, 1.5, NaN, Infinity])('rejects invalid edge count %s', edgesPerStep => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    try {
+      expect(() => createWrapper({ edgesPerStep })).toThrow(
+        'edgesPerStep must be a non-negative safe integer',
+      )
+    } finally {
+      warn.mockRestore()
+    }
   })
 
   it('forwards attributes, Mermaid options, and renderer events', async () => {

@@ -3,13 +3,11 @@ import { computed, ref } from 'vue'
 import VueMermaidSteps from '../src'
 
 const example = `flowchart LR
-    Idea first@--> Plan:::step1
-    Plan second@--> Build:::step2
-    Build third@--> Ship:::step3
-
-    class first step1E
-    class second step2E
-    class third step3E
+    Idea step1E@--> Plan:::step1
+    Plan step2E@--> Frontend[Build frontend]:::step2
+    Plan step2Ea@--> Backend[Build backend]:::step2
+    Frontend step3E@--> Ship:::step3
+    Backend step3Ea@--> Ship
 
     classDef step1 fill:#dbeafe,stroke:#2563eb
     classDef step2 fill:#d1fae5,stroke:#059669
@@ -21,6 +19,7 @@ const draftSteps = ref<number | string>(3)
 const diagram = ref(example)
 const steps = ref(3)
 const currentStep = ref(1)
+const inactiveOpacity = ref(0.2)
 const inputError = ref('')
 const renderError = ref('')
 const pendingChanges = computed(
@@ -48,6 +47,7 @@ function resetExample() {
   draft.value = example
   draftSteps.value = 3
   currentStep.value = 1
+  inactiveOpacity.value = 0.2
   applyDiagram()
 }
 
@@ -85,7 +85,9 @@ function reportRenderError(error: unknown) {
           />
           <p id="source-help" class="hint">
             Use <code>step1</code>, <code>step2</code>, ... for nodes and
-            <code>step1E</code>, <code>step2E</code>, ... for edges.
+            edge IDs like <code>step1E@--&gt;</code> and
+            <code>step1Ea@--&gt;</code> (8 edges per step by default;
+            configurable with <code>edgesPerStep</code>).
           </p>
           <div class="editor-actions">
             <div>
@@ -142,6 +144,17 @@ function reportRenderError(error: unknown) {
             :max="steps"
             :disabled="steps === 0"
           />
+          <label for="inactive-opacity">
+            Inactive opacity: {{ Math.round(inactiveOpacity * 100) }}%
+          </label>
+          <input
+            id="inactive-opacity"
+            v-model.number="inactiveOpacity"
+            type="range"
+            min="0"
+            max="1"
+            step="0.05"
+          />
         </div>
         <p v-if="renderError" class="error" role="alert">
           Mermaid could not render this diagram: {{ renderError }}
@@ -151,12 +164,14 @@ function reportRenderError(error: unknown) {
             :diagram="diagram"
             :steps="steps"
             :current-step="currentStep"
+            :inactive-opacity="inactiveOpacity"
             :options="{ theme: 'default', securityLevel: 'strict' }"
             @parse-error="reportRenderError"
           />
         </div>
         <p class="hint preview-hint">
-          Completed steps are fully visible. Future steps stay at 20% opacity.
+          Completed steps are fully visible. Future steps stay at
+          {{ Math.round(inactiveOpacity * 100) }}% opacity.
           Step 0 dims all numbered steps.
         </p>
       </section>
@@ -170,9 +185,10 @@ function reportRenderError(error: unknown) {
   :diagram="diagram"
   :steps="{{ steps }}"
   :current-step="{{ currentStep }}"
+  :inactive-opacity="{{ inactiveOpacity }}"
 /&gt;</code></pre>
       <p class="hint">
-        All three props are reactive. Change them from JavaScript or bind them to
+        All props are reactive. Change them from JavaScript or bind them to
         your presentation controls.
       </p>
     </section>
