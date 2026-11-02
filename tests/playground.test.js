@@ -19,6 +19,15 @@ function button(wrapper, label) {
 }
 
 describe('playground', () => {
+  it('links to the GitHub repository and published npm package', () => {
+    const wrapper = mount(App)
+    const links = wrapper.get('nav[aria-label="Project links"]')
+    expect(links.get('a[href="https://github.com/MurzNN/vue-mermaid-steps"]').text())
+      .toBe('GitHub repository')
+    expect(links.get('a[href="https://www.npmjs.com/package/vue-mermaid-steps"]').text())
+      .toBe('npm package')
+  })
+
   it('updates inactive opacity live and resets it with the example', async () => {
     const wrapper = mount(App)
     const preview = wrapper.findComponent(VueMermaidSteps)

@@ -6,18 +6,17 @@ in completed steps stay fully visible; future steps are dimmed.
 Built on [vue-mermaid-string](https://www.npmjs.com/package/vue-mermaid-string).
 Requires Vue 3.5 or later and an ESM-capable Vue application.
 
-[Try the live playground](https://murznn.github.io/vue-mermaid-steps/).
+[Live playground](https://murznn.github.io/vue-mermaid-steps/) |
+[npm package](https://www.npmjs.com/package/vue-mermaid-steps) |
+[GitHub repository](https://github.com/MurzNN/vue-mermaid-steps)
 
 ## Installation
 
-After the package is published:
+Install [vue-mermaid-steps from npm](https://www.npmjs.com/package/vue-mermaid-steps):
 
 ```sh
 npm install vue-mermaid-steps
 ```
-
-Before publication, build and pack this project with `npm pack`, then install the
-generated tarball in a consumer application.
 
 ## Usage
 
@@ -228,12 +227,6 @@ npm pack
 Packing automatically builds the library. Only `dist/`, this README, the license,
 and package metadata are included. Install the resulting `.tgz` in a Vue application to test
 the distributable before releasing it.
-
-Before the first public release:
-
-1. Confirm the npm package name is available, or choose a scoped name.
-2. Update the version as appropriate.
-3. Authenticate with npm and run `npm publish --access public` when ready.
 
 ## License
 

@@ -65,6 +65,10 @@ function reportRenderError(error: unknown) {
         Explore <code>vue-mermaid-steps</code>. Edit the source, apply your changes,
         and reveal the story behind your diagram.
       </p>
+      <nav class="project-links" aria-label="Project links">
+        <a href="https://github.com/MurzNN/vue-mermaid-steps">GitHub repository</a>
+        <a href="https://www.npmjs.com/package/vue-mermaid-steps">npm package</a>
+      </nav>
     </header>
 
     <div class="workspace">

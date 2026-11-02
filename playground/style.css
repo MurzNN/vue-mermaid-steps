@@ -22,6 +22,8 @@ main {
 h1 { font-size: clamp(2rem, 4vw, 3rem); line-height: 1.15; margin: 12px 0; letter-spacing: -0.035em; }
 h2 { font-size: 1.1rem; margin: 0; }
 .intro { color: #52617a; font-size: 1.05rem; }
+.project-links { display: flex; flex-wrap: wrap; gap: 20px; }
+.project-links a { color: #3455be; font-weight: 600; text-underline-offset: 3px; }
 .workspace { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 24px; }
 .panel { background: white; border: 1px solid #dce3ef; border-radius: 16px; padding: 24px; box-shadow: 0 8px 32px #17243b05; }
 .panel-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
