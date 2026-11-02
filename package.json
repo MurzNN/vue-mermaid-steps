@@ -1,0 +1,64 @@
+{
+  "name": "vue-mermaid-steps",
+  "version": "0.1.0",
+  "description": "A reactive Vue 3 component for progressively revealing Mermaid diagrams.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MurzNN/vue-mermaid-steps.git"
+  },
+  "homepage": "https://github.com/MurzNN/vue-mermaid-steps#readme",
+  "bugs": {
+    "url": "https://github.com/MurzNN/vue-mermaid-steps/issues"
+  },
+  "type": "module",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "sideEffects": false,
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev": "vite --config vite.playground.config.js",
+    "build": "vite build && vue-tsc --declaration --emitDeclarationOnly",
+    "build:playground": "vite build --config vite.playground.config.js",
+    "preview": "vite preview --config vite.playground.config.js",
+    "typecheck": "vue-tsc --noEmit && vue-tsc --noEmit -p playground/tsconfig.json",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "prepack": "npm run build"
+  },
+  "keywords": [
+    "vue",
+    "vue3",
+    "mermaid",
+    "diagram",
+    "steps",
+    "slidev"
+  ],
+  "peerDependencies": {
+    "vue": "^3.5.0"
+  },
+  "dependencies": {
+    "vue-mermaid-string": "^8.0.2"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^6.0.4",
+    "@vue/test-utils": "^2.4.6",
+    "jsdom": "^27.0.0",
+    "typescript": "~5.9.3",
+    "vite": "^7.3.0",
+    "vitest": "^4.0.0",
+    "vue": "^3.5.0",
+    "vue-tsc": "^3.1.0"
+  }
+}

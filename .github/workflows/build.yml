@@ -1,0 +1,53 @@
+name: Build
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+      - run: npm run build:playground
+      - run: npm pack --ignore-scripts
+      - uses: actions/upload-artifact@v4
+        with:
+          name: vue-mermaid-steps
+          path: vue-mermaid-steps-*.tgz
+          if-no-files-found: error
+      - uses: actions/upload-pages-artifact@v3
+        if: github.ref_name == github.event.repository.default_branch && github.event_name != 'pull_request'
+        with:
+          path: playground-dist
+
+  deploy:
+    if: github.ref_name == github.event.repository.default_branch && github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    concurrency:
+      group: github-pages
+      cancel-in-progress: false
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/configure-pages@v5
+      - name: Deploy playground
+        id: deployment
+        uses: actions/deploy-pages@v4
