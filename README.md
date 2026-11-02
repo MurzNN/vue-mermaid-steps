@@ -6,6 +6,8 @@ in completed steps stay fully visible; future steps are dimmed.
 Built on [vue-mermaid-string](https://www.npmjs.com/package/vue-mermaid-string).
 Requires Vue 3.5 or later and an ESM-capable Vue application.
 
+[Try the live playground](https://murznn.github.io/vue-mermaid-steps/).
+
 ## Installation
 
 After the package is published:
