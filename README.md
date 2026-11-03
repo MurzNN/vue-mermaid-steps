@@ -364,6 +364,12 @@ and publishes to npm, but does not commit, tag, push, or create a GitHub release
 The repository version remains unchanged; reconcile it with the published
 version before a subsequent full release.
 
+The historical `v0.1.0` and `v0.2.0` tags point to the source commits recorded
+in npm's `gitHead` metadata. Version `0.2.0` was prepared only in the publishing
+runner, so its tagged source still declares `0.1.0`. A subsequent reconciliation
+commit updates the repository version and splits the changelog at these tags;
+the already-published npm packages are unchanged.
+
 ## License
 
 [MIT](./LICENSE), copyright 2026 Alexey Korepov.
