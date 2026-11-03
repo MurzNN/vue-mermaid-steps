@@ -297,9 +297,65 @@ pnpm pack --dry-run
 pnpm pack
 ```
 
-Packing automatically builds the library. Only `dist/`, this README, the license,
-and package metadata are included. Install the resulting `.tgz` in a Vue application to test
+Packing automatically builds the library. Only `dist/`, this README, the changelog,
+the license, and package metadata are included. Install the resulting `.tgz` in a Vue application to test
 the distributable before releasing it.
+
+### Releases
+
+[release-it](https://github.com/release-it/release-it) manages version bumps,
+the [changelog](./CHANGELOG.md), release commits, `v`-prefixed tags, GitHub
+releases, and public npm publication with provenance. Release tooling requires
+Node.js 22 (22.22.2+), 24 (24.15.0+), or 26+; the release workflow uses Node.js 24.
+The library's runtime requirements are unchanged.
+
+One-time setup in the standalone `MurzNN/vue-mermaid-steps` repository:
+
+1. On npm, open **vue-mermaid-steps > Settings > Trusted Publisher** and select
+   **GitHub Actions**. Set the owner to `MurzNN`, repository to
+   `vue-mermaid-steps`, and workflow filename to `release.yml`. Leave the
+   environment name empty, since the workflow does not use a GitHub environment.
+   See [npm trusted publishing](https://docs.npmjs.com/trusted-publishers/).
+2. Ensure repository rules allow the workflow's `GITHUB_TOKEN` to push release
+   commits to `main` and create `v*` tags. The job requests `contents: write`
+   for Git/GitHub releases and `id-token: write` for npm OIDC authentication.
+   It does not need an `NPM_TOKEN` or personal access token.
+
+To release:
+
+1. Merge changes into `main` using Conventional Commits (`feat:`, `fix:`,
+   `feat!:`, or a `BREAKING CHANGE:` footer) so release notes can be generated.
+2. Open **Actions > Release > Run workflow** on `main` and choose `patch`,
+   `minor`, or `major`. **Dry run** is enabled by default: inspect the proposed
+   version and notes without publishing, committing, or pushing.
+3. Run again with **Dry run** disabled to publish. The workflow installs from
+   the lockfile, builds, checks types, and runs tests before release-it updates
+   the version/changelog, publishes to npm, commits, tags, pushes, and creates
+   a GitHub release using the generated notes. Packing also rebuilds the
+   library via `prepack`.
+
+The workflow only runs on the default branch, and release-it requires `main`.
+Update both settings if the repository's release branch changes. Concurrent
+releases are serialized; each run checks out the latest default-branch commit.
+The existing Build/Pages workflow remains separate; GitHub does not trigger
+push workflows for commits pushed with `GITHUB_TOKEN`.
+
+For a local preview after installing dependencies:
+
+```sh
+pnpm run release:dry-run patch --ci --github.release=false
+```
+
+This runs type checks and tests, then previews the release without needing
+GitHub or npm credentials. Use a clean, up-to-date `main` checkout with an
+upstream remote. npm authentication checks are disabled in release-it because
+trusted publishing obtains credentials at publish time; actual publishing
+must run in the configured GitHub workflow.
+
+If publication fails after a commit, tag, or npm version has already been
+created, inspect the remote Git tags, GitHub releases, and npm version before
+retrying. Do not blindly rerun with another increment: release steps across
+GitHub and npm are not transactional.
 
 ## License
 

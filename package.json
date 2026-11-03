@@ -22,7 +22,8 @@
   },
   "files": [
     "dist",
-    "README.md"
+    "README.md",
+    "CHANGELOG.md"
   ],
   "sideEffects": false,
   "engines": {
@@ -36,7 +37,9 @@
     "typecheck": "vue-tsc --noEmit && vue-tsc --noEmit -p playground/tsconfig.json",
     "test": "vitest run",
     "test:watch": "vitest",
-    "prepack": "pnpm run build"
+    "prepack": "pnpm run build",
+    "release": "pnpm run typecheck && pnpm test && release-it",
+    "release:dry-run": "pnpm run release --dry-run"
   },
   "keywords": [
     "vue",
@@ -53,9 +56,12 @@
     "vue-mermaid-string": "^8.0.2"
   },
   "devDependencies": {
+    "@release-it/conventional-changelog": "^12.0.2",
     "@vitejs/plugin-vue": "^6.0.4",
     "@vue/test-utils": "^2.4.6",
+    "conventional-changelog-conventionalcommits": "^10.4.1",
     "jsdom": "^27.0.0",
+    "release-it": "^21.1.2",
     "typescript": "~5.9.3",
     "vite": "^7.3.0",
     "vitest": "^4.0.0",
