@@ -20,6 +20,12 @@ const diagram = ref(example)
 const steps = ref(3)
 const currentStep = ref(1)
 const inactiveOpacity = ref(0.2)
+const currentStepStyle = ref('')
+const dimmedStepsStyle = ref('')
+const currentStepEdgeStyle = ref('')
+const dimmedStepsEdgeStyle = ref('')
+const currentStepCss = ref('')
+const currentStepEdgeCss = ref('')
 const inputError = ref('')
 const renderError = ref('')
 const pendingChanges = computed(
@@ -48,6 +54,12 @@ function resetExample() {
   draftSteps.value = 3
   currentStep.value = 1
   inactiveOpacity.value = 0.2
+  currentStepStyle.value = ''
+  dimmedStepsStyle.value = ''
+  currentStepEdgeStyle.value = ''
+  dimmedStepsEdgeStyle.value = ''
+  currentStepCss.value = ''
+  currentStepEdgeCss.value = ''
   applyDiagram()
 }
 
@@ -169,13 +181,91 @@ function reportRenderError(error: unknown) {
             :steps="steps"
             :current-step="currentStep"
             :inactive-opacity="inactiveOpacity"
+            :current-step-style="currentStepStyle"
+            :dimmed-steps-style="dimmedStepsStyle"
+            :current-step-edge-style="currentStepEdgeStyle"
+            :dimmed-steps-edge-style="dimmedStepsEdgeStyle"
+            :current-step-css="currentStepCss"
+            :current-step-edge-css="currentStepEdgeCss"
             :options="{ theme: 'default', securityLevel: 'strict' }"
             @parse-error="reportRenderError"
+            @rendered="renderError = ''"
           />
         </div>
+        <section class="style-controls" aria-labelledby="styles-heading">
+          <h2 id="styles-heading">Step styles</h2>
+          <label for="current-step-style">Current step node style</label>
+          <input
+            id="current-step-style"
+            v-model="currentStepStyle"
+            type="text"
+            placeholder="fill:#ffe08a,stroke:#d97706"
+            spellcheck="false"
+            aria-describedby="step-style-help"
+          />
+          <label for="current-step-edge-style">Current step edge style</label>
+          <input
+            id="current-step-edge-style"
+            v-model="currentStepEdgeStyle"
+            type="text"
+            placeholder="stroke:#d97706,stroke-width:3px"
+            spellcheck="false"
+            aria-describedby="step-style-help"
+          />
+          <label for="dimmed-steps-style">Dimmed steps node style</label>
+          <input
+            id="dimmed-steps-style"
+            v-model="dimmedStepsStyle"
+            type="text"
+            placeholder="opacity:0.1"
+            spellcheck="false"
+            aria-describedby="step-style-help"
+          />
+          <label for="dimmed-steps-edge-style">Dimmed steps edge style</label>
+          <input
+            id="dimmed-steps-edge-style"
+            v-model="dimmedStepsEdgeStyle"
+            type="text"
+            placeholder="opacity:0.3,stroke:#999"
+            spellcheck="false"
+            aria-describedby="step-style-help"
+          />
+          <p id="step-style-help" class="hint">
+            Styles update live. Use comma-separated Mermaid declarations, such as
+            <code>fill:#ffe08a,stroke-width:3px</code>, not CSS blocks.
+            Current step styles affect only the current step, not completed steps.
+            Dimmed styles affect future steps. Custom styles can override opacity;
+            node and edge styles are independent and appended after default opacity.
+            Later declarations override earlier ones.
+            Clear an input to restore its default styling.
+          </p>
+          <label for="current-step-css">Current step node CSS</label>
+          <input
+            id="current-step-css"
+            v-model="currentStepCss"
+            type="text"
+            placeholder="filter: drop-shadow(0 0 4px gold);"
+            spellcheck="false"
+            aria-describedby="step-css-help"
+          />
+          <label for="current-step-edge-css">Current step edge CSS</label>
+          <input
+            id="current-step-edge-css"
+            v-model="currentStepEdgeCss"
+            type="text"
+            placeholder="stroke: gold; stroke-width: 4px;"
+            spellcheck="false"
+            aria-describedby="step-css-help"
+          />
+          <p id="step-css-help" class="hint">
+            CSS inputs use semicolon-separated declarations, not Mermaid syntax
+            or selector blocks. They override rendered current-step node shapes
+            and edge paths only. Clear an input to restore Mermaid styling.
+          </p>
+        </section>
         <p class="hint preview-hint">
           Completed steps are fully visible. Future steps stay at
-          {{ Math.round(inactiveOpacity * 100) }}% opacity.
+          {{ Math.round(inactiveOpacity * 100) }}% opacity unless overridden by custom styles.
           Step 0 dims all numbered steps.
         </p>
       </section>
@@ -185,11 +275,24 @@ function reportRenderError(error: unknown) {
       <h2 id="usage-heading">Use it in your Vue app</h2>
       <pre><code>import VueMermaidSteps from 'vue-mermaid-steps'
 
+const currentStepStyle = {{ JSON.stringify(currentStepStyle) }}
+const dimmedStepsStyle = {{ JSON.stringify(dimmedStepsStyle) }}
+const currentStepEdgeStyle = {{ JSON.stringify(currentStepEdgeStyle) }}
+const dimmedStepsEdgeStyle = {{ JSON.stringify(dimmedStepsEdgeStyle) }}
+const currentStepCss = {{ JSON.stringify(currentStepCss) }}
+const currentStepEdgeCss = {{ JSON.stringify(currentStepEdgeCss) }}
+
 &lt;VueMermaidSteps
   :diagram="diagram"
   :steps="{{ steps }}"
   :current-step="{{ currentStep }}"
   :inactive-opacity="{{ inactiveOpacity }}"
+  :current-step-style="currentStepStyle"
+  :dimmed-steps-style="dimmedStepsStyle"
+  :current-step-edge-style="currentStepEdgeStyle"
+  :dimmed-steps-edge-style="dimmedStepsEdgeStyle"
+  :current-step-css="currentStepCss"
+  :current-step-edge-css="currentStepEdgeCss"
 /&gt;</code></pre>
       <p class="hint">
         All props are reactive. Change them from JavaScript or bind them to

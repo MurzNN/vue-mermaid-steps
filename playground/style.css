@@ -39,6 +39,7 @@ button.subtle { border: 0; background: #f3f6fb; }
 textarea { display: block; width: 100%; min-height: 360px; resize: vertical; padding: 16px; border: 1px solid #cbd5e1; border-radius: 8px; font-family: ui-monospace, monospace; font-size: 0.85rem; line-height: 1.6; tab-size: 4; background: #f8fafc; color: #17243b; }
 input[type="number"] { width: 120px; padding: 8px; border: 1px solid #cbd5e1; border-radius: 8px; }
 input[type="range"] { width: 100%; accent-color: #3455be; }
+input[type="text"] { display: block; width: 100%; min-width: 0; padding: 8px; margin-bottom: 16px; border: 1px solid #cbd5e1; border-radius: 8px; font-family: ui-monospace, monospace; font-size: 0.85rem; }
 .editor-actions { display: flex; align-items: end; gap: 16px; flex-wrap: wrap; margin-top: 20px; }
 .hint { color: #52617a; font-size: 0.85rem; }
 .error { color: #9f1239; background: #fff1f2; border: 1px solid #fecdd3; border-radius: 8px; padding: 12px; overflow-wrap: anywhere; white-space: pre-wrap; }
@@ -48,6 +49,7 @@ output { border-radius: 20px; background: #edf2ff; color: #3455be; padding: 5px 
 .diagram-preview > div { width: 100%; }
 .diagram-preview svg { display: block; margin: auto; }
 .preview-hint { margin-bottom: 0; }
+.style-controls h2 { margin-bottom: 16px; }
 .usage { margin-top: 32px; }
 pre { background: #17243b; color: #e2e8f0; border-radius: 12px; padding: 24px; overflow-x: auto; font-size: 0.9rem; }
 code { font-family: ui-monospace, monospace; }

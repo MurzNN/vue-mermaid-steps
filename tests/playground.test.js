@@ -6,8 +6,12 @@ import VueMermaidSteps from '../src'
 vi.mock('../src', () => ({
   default: {
     name: 'VueMermaidSteps',
-    props: ['diagram', 'steps', 'currentStep', 'inactiveOpacity'],
-    emits: ['parse-error'],
+    props: [
+      'diagram', 'steps', 'currentStep', 'inactiveOpacity', 'currentStepStyle', 'dimmedStepsStyle',
+      'currentStepEdgeStyle', 'dimmedStepsEdgeStyle',
+      'currentStepCss', 'currentStepEdgeCss',
+    ],
+    emits: ['parse-error', 'rendered'],
     template: '<div />',
   },
 }))
@@ -34,10 +38,88 @@ describe('playground', () => {
     expect(preview.props('inactiveOpacity')).toBe(0.2)
     await wrapper.get('#inactive-opacity').setValue('0.5')
     expect(preview.props('inactiveOpacity')).toBe(0.5)
-    expect(wrapper.text()).toContain('Future steps stay at 50% opacity.')
+    expect(wrapper.text()).toContain('Future steps stay at 50% opacity unless overridden by custom styles.')
     await button(wrapper, 'Reset example').trigger('click')
     expect(preview.props('inactiveOpacity')).toBe(0.2)
     expect(wrapper.get('#inactive-opacity').element.value).toBe('0.2')
+  })
+
+  it('updates custom styles live, includes them in usage, and supports clearing and reset', async () => {
+    const wrapper = mount(App)
+    const preview = wrapper.findComponent(VueMermaidSteps)
+    expect(preview.props()).toMatchObject({ currentStepStyle: '', dimmedStepsStyle: '' })
+    const currentStyle = 'fill:#ffe08a,stroke-width:3px'
+    const dimmedStyle = 'opacity:0.1'
+    await wrapper.get('#current-step-style').setValue(currentStyle)
+    await wrapper.get('#dimmed-steps-style').setValue(dimmedStyle)
+    expect(preview.props()).toMatchObject({
+      currentStepStyle: currentStyle,
+      dimmedStepsStyle: dimmedStyle,
+    })
+    expect(wrapper.get('.usage code').text()).toContain(`const currentStepStyle = "${currentStyle}"`)
+    expect(wrapper.get('.usage code').text()).toContain(`const dimmedStepsStyle = "${dimmedStyle}"`)
+    expect(wrapper.get('.usage code').text()).toContain(':current-step-style="currentStepStyle"')
+    expect(wrapper.get('.usage code').text()).toContain(':dimmed-steps-style="dimmedStepsStyle"')
+    expect(wrapper.text()).not.toContain('Unapplied changes.')
+
+    await wrapper.get('#current-step-style').setValue('')
+    await wrapper.get('#dimmed-steps-style').setValue('')
+    expect(preview.props()).toMatchObject({ currentStepStyle: '', dimmedStepsStyle: '' })
+    await wrapper.get('#current-step-style').setValue(currentStyle)
+    await wrapper.get('#dimmed-steps-style').setValue(dimmedStyle)
+    await button(wrapper, 'Reset example').trigger('click')
+    expect(preview.props()).toMatchObject({ currentStepStyle: '', dimmedStepsStyle: '' })
+    expect(wrapper.get('#current-step-style').element.value).toBe('')
+    expect(wrapper.get('#dimmed-steps-style').element.value).toBe('')
+    expect(wrapper.get('.usage code').text()).toContain('const currentStepStyle = ""')
+    expect(wrapper.get('.usage code').text()).toContain('const dimmedStepsStyle = ""')
+  })
+
+  it('clears render errors after corrected styles render successfully', async () => {
+    const wrapper = mount(App)
+    const preview = wrapper.findComponent(VueMermaidSteps)
+    await wrapper.get('#current-step-style').setValue('invalid style')
+    preview.vm.$emit('parse-error', new Error('Invalid style'))
+    await wrapper.vm.$nextTick()
+    expect(wrapper.get('[role="alert"]').text()).toContain('Invalid style')
+    await wrapper.get('#current-step-style').setValue('fill:red')
+    preview.vm.$emit('rendered')
+    await wrapper.vm.$nextTick()
+    expect(wrapper.find('[role="alert"]').exists()).toBe(false)
+  })
+
+  it('places all style inputs below the chart', () => {
+    const wrapper = mount(App)
+    const chart = wrapper.get('.diagram-preview').element
+    const controls = wrapper.get('.style-controls')
+    expect(chart.compareDocumentPosition(controls.element) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    expect(controls.findAll('input[type="text"]')).toHaveLength(6)
+    expect(wrapper.find('.step-controls input[type="text"]').exists()).toBe(false)
+  })
+
+  it.each([
+    ['currentStepStyle', 'current-step-style', 'fill:red'],
+    ['currentStepEdgeStyle', 'current-step-edge-style', 'stroke:green'],
+    ['dimmedStepsStyle', 'dimmed-steps-style', 'opacity:0.1'],
+    ['dimmedStepsEdgeStyle', 'dimmed-steps-edge-style', 'opacity:0.3'],
+    ['currentStepCss', 'current-step-css', 'filter: drop-shadow(0 0 4px gold);'],
+    ['currentStepEdgeCss', 'current-step-edge-css', 'stroke: gold; stroke-width: 4px;'],
+  ])('updates %s live, includes it in usage, and clears it on reset', async (prop, id, style) => {
+    const wrapper = mount(App)
+    const preview = wrapper.findComponent(VueMermaidSteps)
+    expect(preview.props(prop)).toBe('')
+    await wrapper.get(`#${id}`).setValue(style)
+    expect(preview.props(prop)).toBe(style)
+    expect(wrapper.get('.usage code').text()).toContain(`const ${prop} = "${style}"`)
+    expect(wrapper.get('.usage code').text()).toContain(`:${id}="${prop}"`)
+    expect(wrapper.text()).not.toContain('Unapplied changes.')
+    await wrapper.get(`#${id}`).setValue('')
+    expect(preview.props(prop)).toBe('')
+    await wrapper.get(`#${id}`).setValue(style)
+    await button(wrapper, 'Reset example').trigger('click')
+    expect(preview.props(prop)).toBe('')
+    expect(wrapper.get(`#${id}`).element.value).toBe('')
+    expect(wrapper.get('.usage code').text()).toContain(`const ${prop} = ""`)
   })
 
   it('reveals steps with buttons and the slider, respecting boundaries', async () => {
