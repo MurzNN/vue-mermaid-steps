@@ -16,6 +16,10 @@ on:
         description: Preview without changing files, publishing, or pushing
         type: boolean
         default: true
+      npm-only:
+        description: Publish to npm without a release commit, Git tag, or GitHub release
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -54,9 +58,13 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           RELEASE_INCREMENT: ${{ inputs.increment }}
           RELEASE_DRY_RUN: ${{ inputs.dry-run }}
+          RELEASE_NPM_ONLY: ${{ inputs.npm-only }}
         run: |
+          args=("$RELEASE_INCREMENT" --ci)
           if [ "$RELEASE_DRY_RUN" = "true" ]; then
-            pnpm run release "$RELEASE_INCREMENT" --ci --dry-run
-          else
-            pnpm run release "$RELEASE_INCREMENT" --ci
+            args+=(--dry-run)
           fi
+          if [ "$RELEASE_NPM_ONLY" = "true" ]; then
+            args+=(--git.commit=false --git.tag=false --git.push=false --github.release=false)
+          fi
+          pnpm run release "${args[@]}"

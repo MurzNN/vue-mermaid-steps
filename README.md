@@ -357,6 +357,13 @@ created, inspect the remote Git tags, GitHub releases, and npm version before
 retrying. Do not blindly rerun with another increment: release steps across
 GitHub and npm are not transactional.
 
+For an npm-only retry when the previous publish failed before any version or
+tag was created, select the same increment and enable **npm-only** (disable
+**Dry run** to publish). This prepares the version and changelog in the runner
+and publishes to npm, but does not commit, tag, push, or create a GitHub release.
+The repository version remains unchanged; reconcile it with the published
+version before a subsequent full release.
+
 ## License
 
 [MIT](./LICENSE), copyright 2026 Alexey Korepov.
