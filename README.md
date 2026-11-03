@@ -15,7 +15,7 @@ Requires Vue 3.5 or later and an ESM-capable Vue application.
 Install [vue-mermaid-steps from npm](https://www.npmjs.com/package/vue-mermaid-steps):
 
 ```sh
-npm install vue-mermaid-steps
+pnpm add vue-mermaid-steps
 ```
 
 ## Usage
@@ -156,18 +156,18 @@ component does not add sanitization beyond the underlying renderer.
 
 ## Development
 
-Run commands from this directory. Node.js 22.12+ and npm are required; no Slidev
+Run commands from this directory. Node.js 22.12+ and pnpm are required; no Slidev
 installation or files from a parent repository are needed.
 
 ```sh
-npm ci
-npm run typecheck
-npm test
-npm run build
+pnpm install --frozen-lockfile
+pnpm run typecheck
+pnpm test
+pnpm run build
 ```
 
-- `npm run test:watch` runs tests in watch mode.
-- `npm run build` creates an ESM library and TypeScript declarations in `dist/`.
+- `pnpm run test:watch` runs tests in watch mode.
+- `pnpm run build` creates an ESM library and TypeScript declarations in `dist/`.
 - Vue and `vue-mermaid-string` are externalized from the build.
 - Tests stub the Mermaid renderer to verify source generation, prop reactivity,
   attribute forwarding, and events without coupling to SVG layout.
@@ -188,9 +188,9 @@ resettable example, and explicit validation/rendering errors. Source changes are
 applied with **Apply diagram**; step changes update the preview immediately.
 
 ```sh
-npm run dev
-npm run build:playground
-npm run preview
+pnpm run dev
+pnpm run build:playground
+pnpm run preview
 ```
 
 The production demo is written to `playground-dist/`, separately from the npm
@@ -212,7 +212,7 @@ the playground. The deploy job uses GitHub's built-in token and OIDC permissions
 no personal access token or npm credentials are needed.
 
 When extracting this directory, copy its entire contents, including `.github`,
-`.gitignore`, and `package-lock.json`, to the root of the new repository.
+`.gitignore`, and `pnpm-lock.yaml`, to the root of the new repository.
 GitHub only discovers workflows in a repository's root `.github/workflows`;
 the nested workflow is inactive while this project remains inside another
 repository.
@@ -220,8 +220,8 @@ repository.
 ## Packaging and publication
 
 ```sh
-npm pack --dry-run
-npm pack
+pnpm pack --dry-run
+pnpm pack
 ```
 
 Packing automatically builds the library. Only `dist/`, this README, the license,

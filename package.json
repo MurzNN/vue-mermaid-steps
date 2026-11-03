@@ -1,6 +1,7 @@
 {
   "name": "vue-mermaid-steps",
   "version": "0.1.0",
+  "packageManager": "pnpm@12.16.1",
   "description": "A reactive Vue 3 component for progressively revealing Mermaid diagrams.",
   "license": "MIT",
   "repository": {
@@ -35,7 +36,7 @@
     "typecheck": "vue-tsc --noEmit && vue-tsc --noEmit -p playground/tsconfig.json",
     "test": "vitest run",
     "test:watch": "vitest",
-    "prepack": "npm run build"
+    "prepack": "pnpm run build"
   },
   "keywords": [
     "vue",
