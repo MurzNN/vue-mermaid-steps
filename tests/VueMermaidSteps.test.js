@@ -1,15 +1,15 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { enableAutoUnmount, mount } from '@vue/test-utils'
-import Renderer from 'vue-mermaid-string'
+import Renderer from '../src/MermaidRenderer.vue'
 import VueMermaidSteps, { VueMermaidSteps as NamedComponent } from '../src/index'
 
 enableAutoUnmount(afterEach)
 
-vi.mock('vue-mermaid-string', () => ({
+vi.mock('../src/MermaidRenderer.vue', () => ({
   default: {
-    name: 'VueMermaidString',
-    props: ['value'],
-    emits: ['rendered', 'node-click', 'parse-error'],
+    name: 'MermaidRenderer',
+    props: ['value', 'options'],
+    emits: ['rendered', 'parse-error'],
     template: '<div />',
   },
 }))
@@ -418,25 +418,21 @@ describe('VueMermaidSteps', () => {
   it('forwards attributes, Mermaid options, and renderer events', async () => {
     const wrapper = createWrapper()
     const onRendered = vi.fn()
-    const onNodeClick = vi.fn()
     const onParseError = vi.fn()
     await wrapper.setProps({
       class: 'diagram-frame',
       options: { theme: 'dark' },
       onRendered,
-      'onNode-click': onNodeClick,
       'onParse-error': onParseError,
     })
     const renderer = wrapper.findComponent(Renderer)
     expect(renderer.classes()).toContain('diagram-frame')
-    expect(renderer.vm.$attrs.options).toEqual({ theme: 'dark' })
+    expect(renderer.props('options')).toEqual({ theme: 'dark' })
 
     const error = new Error('Invalid Mermaid diagram')
     renderer.vm.$emit('rendered')
-    renderer.vm.$emit('node-click', 'A')
     renderer.vm.$emit('parse-error', error)
     expect(onRendered).toHaveBeenCalledExactlyOnceWith()
-    expect(onNodeClick).toHaveBeenCalledExactlyOnceWith('A')
     expect(onParseError).toHaveBeenCalledExactlyOnceWith(error)
   })
 })

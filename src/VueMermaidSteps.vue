@@ -1,6 +1,8 @@
 <script setup lang="ts">
+import type { MermaidConfig } from 'mermaid'
+import type { PropType } from 'vue'
 import { computed, onBeforeUnmount, useTemplateRef, watch } from 'vue'
-import VueMermaidString from 'vue-mermaid-string'
+import MermaidRenderer from './MermaidRenderer.vue'
 
 const props = defineProps({
   diagram: {
@@ -47,7 +49,21 @@ const props = defineProps({
     type: String,
     default: '',
   },
+  options: {
+    type: Object as PropType<MermaidConfig>,
+    default: undefined,
+  },
 })
+
+const emit = defineEmits<{
+  'rendered': []
+  'parse-error': [error: unknown]
+}>()
+
+function onRendered() {
+  applyCurrentStepCss()
+  emit('rendered')
+}
 
 const renderer = useTemplateRef('renderer')
 const originalStyles = new Map<SVGElement, string | null>()
@@ -154,5 +170,11 @@ const diagramAtStep = computed(() => {
 </script>
 
 <template>
-  <VueMermaidString ref="renderer" :value="diagramAtStep" @rendered="applyCurrentStepCss" />
+  <MermaidRenderer
+    ref="renderer"
+    :value="diagramAtStep"
+    :options="options"
+    @rendered="onRendered"
+    @parse-error="emit('parse-error', $event)"
+  />
 </template>

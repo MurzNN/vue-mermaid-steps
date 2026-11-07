@@ -3,7 +3,8 @@
 A Vue 3 component for progressively revealing Mermaid diagrams. Nodes and edges
 in completed steps stay fully visible; future steps are dimmed.
 
-Built on [vue-mermaid-string](https://www.npmjs.com/package/vue-mermaid-string).
+Renders with [Mermaid](https://mermaid.js.org/) v12 directly; Mermaid is loaded
+lazily on the client when the component mounts.
 Requires Vue 3.5 or later and an ESM-capable Vue application.
 
 [Live playground](https://murznn.github.io/vue-mermaid-steps/) |
@@ -75,6 +76,7 @@ optional.
 | `dimmedStepsEdgeStyle` | `string` | Mermaid style declarations for edges in future (dimmed) steps. Defaults to `''`. |
 | `currentStepCss` | `string` | CSS declarations for rendered current-step node shapes. Defaults to `''`. |
 | `currentStepEdgeCss` | `string` | CSS declarations for rendered current-step edge paths. Defaults to `''`. |
+| `options` | `MermaidConfig` | Options passed to `mermaid.initialize` before each render. Defaults to `{ securityLevel: 'loose', theme: 'default' }`. |
 
 ### Step classes
 
@@ -204,8 +206,13 @@ modified.
 
 ### Renderer options and events
 
-Attributes and listeners are forwarded to `vue-mermaid-string`, including
-`class`, `style`, `options`, `@rendered`, `@node-click`, and `@parse-error`.
+Attributes such as `class` and `style` are applied to the diagram's wrapper
+element. The `options` prop is merged over the defaults and passed to
+`mermaid.initialize`; changing it re-renders the diagram. The component emits:
+
+- `rendered` after a new SVG has been inserted;
+- `parse-error` with the error thrown by Mermaid when a diagram cannot be rendered.
+
 For example:
 
 ```vue
@@ -218,9 +225,10 @@ For example:
 />
 ```
 
-Mermaid's default error display is retained. Handle `parse-error` for custom
-error reporting. Only render diagram content from sources you trust; this
-component does not add sanitization beyond the underlying renderer.
+On errors, the previously rendered diagram stays visible. Handle `parse-error`
+for custom error reporting. Mermaid `click` callbacks are not wired to Vue
+events. Only render diagram content from sources you trust; the default
+`securityLevel: 'loose'` can be overridden with `options`.
 
 ## Development
 
@@ -236,9 +244,10 @@ pnpm run build
 
 - `pnpm run test:watch` runs tests in watch mode.
 - `pnpm run build` creates an ESM library and TypeScript declarations in `dist/`.
-- Vue and `vue-mermaid-string` are externalized from the build.
-- Tests stub the Mermaid renderer to verify source generation, prop reactivity,
-  attribute forwarding, and events without coupling to SVG layout.
+- Vue and Mermaid are externalized from the build.
+- Component tests stub the internal Mermaid renderer to verify source generation,
+  prop reactivity, attribute forwarding, and events without coupling to SVG
+  layout; renderer tests mock Mermaid to cover rendering, errors, and stale renders.
 - Playground tests cover editing, step controls, validation, and error recovery.
 
 ## GitHub build

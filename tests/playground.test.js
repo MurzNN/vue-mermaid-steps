@@ -9,7 +9,7 @@ vi.mock('../src', () => ({
     props: [
       'diagram', 'steps', 'currentStep', 'inactiveOpacity', 'currentStepStyle', 'dimmedStepsStyle',
       'currentStepEdgeStyle', 'dimmedStepsEdgeStyle',
-      'currentStepCss', 'currentStepEdgeCss',
+      'currentStepCss', 'currentStepEdgeCss', 'options',
     ],
     emits: ['parse-error', 'rendered'],
     template: '<div />',

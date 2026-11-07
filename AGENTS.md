@@ -6,7 +6,9 @@ diagrams. This package does not depend on the parent Slidev workspace.
 ## Project map
 
 - [src/VueMermaidSteps.vue](./src/VueMermaidSteps.vue): component props and reactive
-  Mermaid source generation; delegates rendering to `vue-mermaid-string`.
+  Mermaid source generation; delegates rendering to `MermaidRenderer.vue`.
+- [src/MermaidRenderer.vue](./src/MermaidRenderer.vue): internal renderer that
+  lazily imports `mermaid`, renders SVG, and emits `rendered`/`parse-error`.
 - [src/index.ts](./src/index.ts): default and named component exports.
 - [playground/](./playground/): standalone demo; `App.vue` contains controls,
   preview, and usage example; `style.css` contains page styling.
