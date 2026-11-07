@@ -4,7 +4,9 @@ A Vue 3 component for progressively revealing Mermaid diagrams. Nodes and edges
 in completed steps stay fully visible; future steps are dimmed.
 
 Renders with [Mermaid](https://mermaid.js.org/) v12 directly; Mermaid is loaded
-lazily on the client when the component mounts.
+lazily on the client when the component mounts. The diagram is rendered once,
+unchanged; step visibility and styles are applied to the rendered SVG, so moving
+between steps does not re-render the diagram.
 Requires Vue 3.5 or later and an ESM-capable Vue application.
 
 [Live playground](https://murznn.github.io/vue-mermaid-steps/) |
@@ -24,7 +26,7 @@ pnpm add vue-mermaid-steps
 ```vue
 <script setup lang="ts">
 import { ref } from 'vue'
-import VueMermaidSteps from 'vue-mermaid-steps'
+import MermaidSteps from 'vue-mermaid-steps'
 
 const steps = 3
 const currentStep = ref(0)
@@ -41,7 +43,7 @@ const diagram = ref(`flowchart LR
 <template>
   <button @click="currentStep = Math.max(0, currentStep - 1)">Previous</button>
   <button @click="currentStep = Math.min(steps, currentStep + 1)">Next</button>
-  <VueMermaidSteps
+  <MermaidSteps
     :diagram="diagram"
     :steps="steps"
     :current-step="currentStep"
@@ -52,7 +54,7 @@ const diagram = ref(`flowchart LR
 Both default and named imports are available:
 
 ```ts
-import { VueMermaidSteps } from 'vue-mermaid-steps'
+import { MermaidSteps } from 'vue-mermaid-steps'
 ```
 
 The same component works in Slidev: import it in a slide's `<script setup>` and
@@ -70,28 +72,26 @@ optional.
 | `currentStep` | `number` | Optional integer number of steps to reveal, normally from `0` to `steps`. Defaults to `0` (all steps dimmed). |
 | `edgesPerStep` | `number` | Non-negative safe integer number of edge IDs to map per step, including the base ID. Defaults to `8`. |
 | `inactiveOpacity` | `number` | Opacity of future steps, from `0` (transparent) to `1` (fully visible). Defaults to `0.2`. Invalid values raise a `RangeError`. |
-| `currentStepStyle` | `string` | Mermaid style declarations for nodes in exactly the current step. Defaults to `''`. |
-| `dimmedStepsStyle` | `string` | Mermaid style declarations for nodes in future (dimmed) steps. Defaults to `''`. |
-| `currentStepEdgeStyle` | `string` | Mermaid style declarations for edges in exactly the current step. Defaults to `''`. |
-| `dimmedStepsEdgeStyle` | `string` | Mermaid style declarations for edges in future (dimmed) steps. Defaults to `''`. |
-| `currentStepCss` | `string` | CSS declarations for rendered current-step node shapes. Defaults to `''`. |
-| `currentStepEdgeCss` | `string` | CSS declarations for rendered current-step edge paths. Defaults to `''`. |
-| `options` | `MermaidConfig` | Options passed to `mermaid.initialize` before each render. Defaults to `{ securityLevel: 'loose', theme: 'default' }`. |
+| `currentStepStyle` | `string` | CSS declarations for nodes in exactly the current step. Defaults to `''`. |
+| `dimmedStepsStyle` | `string` | CSS declarations for nodes in future (dimmed) steps. Defaults to `''`. |
+| `currentStepEdgeStyle` | `string` | CSS declarations for edges in exactly the current step. Defaults to `''`. |
+| `dimmedStepsEdgeStyle` | `string` | CSS declarations for edges in future (dimmed) steps. Defaults to `''`. |
+| `options` | `MermaidConfig` | Options passed to `mermaid.initialize` before rendering. Defaults to Mermaid's own defaults. |
 
 ### Step classes
 
 - Assign nodes to `step1`, `step2`, etc. using `:::step1` or `class`.
 - Name edges `step1E`, `step2E`, etc. using Mermaid's `id@-->` syntax.
-  The component automatically maps these IDs to the corresponding edge class.
+  The component automatically treats these IDs as edges of the corresponding step.
 - Elements in steps up to `currentStep` have opacity `1`.
 - Later steps use `inactiveOpacity` (default `0.2`); completed steps stay at `1`.
-- Custom style strings are appended after the default opacity declaration and
+- Custom style strings are applied after the default opacity declaration and
   can override it. Current-step style props do not apply to completed steps.
 - At step `0`, all numbered steps are dimmed. At `steps`, all are visible.
 - Elements without step classes are unaffected.
-- `steps: 0` passes the diagram through unchanged.
+- `steps: 0` leaves the rendered diagram unstyled.
 - Values of `currentStep` below `0` dim every step; values above `steps` reveal
-  every step. They do not generate additional step classes.
+  every step.
 
 ### Edge naming convention
 
@@ -105,82 +105,69 @@ step1E, step1Ea, step1Eb, step1Ec, step1Ed, step1Ee, step1Ef, step1Eg
 Adjust dimming independently of the current step:
 
 ```vue
-<VueMermaidSteps :diagram="diagram" :steps="3" :inactive-opacity="0.4" />
+<MermaidSteps :diagram="diagram" :steps="3" :inactive-opacity="0.4" />
 ```
 
-Customize the current and dimmed steps using Mermaid's comma-separated
-`classDef` style syntax (not CSS declaration blocks):
+Customize the current and dimmed steps using semicolon-separated CSS
+declarations (no selectors or braces):
 
 ```vue
-<VueMermaidSteps
+<MermaidSteps
   :diagram="diagram"
   :steps="3"
   :current-step="currentStep"
-  current-step-style="fill:#ffe08a,stroke:#d97706,stroke-width:3px"
-  dimmed-steps-style="opacity:0.1"
+  current-step-style="fill: #ffe08a; stroke: #d97706; stroke-width: 3px"
+  dimmed-steps-style="opacity: 0.1"
 />
 ```
 
-Both props affect only the corresponding node classes; edges are unchanged. Completed steps
+Both props affect only the corresponding nodes; edges are unchanged. Completed steps
 receive neither custom style string. Changing or clearing these props updates
-the diagram reactively; an empty string retains the default opacity behavior.
+the rendered diagram without re-rendering; an empty string retains the default
+opacity behavior.
 At step `0`, only `dimmedStepsStyle` applies; above `steps`, neither applies.
 
 Style nodes and edges independently with the specific props:
 
 ```vue
-<VueMermaidSteps
+<MermaidSteps
   :diagram="diagram"
   :steps="3"
   :current-step="currentStep"
-  current-step-style="fill:#ffe08a,stroke:#d97706"
-  current-step-edge-style="stroke:#d97706,stroke-width:3px"
-  dimmed-steps-style="opacity:0.1"
-  dimmed-steps-edge-style="opacity:0.3,stroke:#999"
+  current-step-style="fill: #ffe08a; stroke: #d97706"
+  current-step-edge-style="stroke: #d97706; stroke-width: 3px"
+  dimmed-steps-style="opacity: 0.1"
+  dimmed-steps-edge-style="opacity: 0.3; stroke: #999"
 />
 ```
 
-Node and edge styles are independent and appended after default opacity.
+Node and edge styles are independent and applied after default opacity.
 Later declarations override earlier ones for the same property while retaining
-other existing Mermaid class styles. Empty strings add no declarations, leaving
+other existing Mermaid class styles. Node styles target the same elements as a
+Mermaid `classDef stepN` would (the node's shape and label); edge styles target
+the edge path. Empty strings add no declarations, leaving
 default opacity behavior intact. All four props follow the same current/future
 step rules and update reactively. There is no shared node-and-edge style prop.
 
-For native CSS, use semicolon-separated declarations (no selectors or braces):
-
-```vue
-<VueMermaidSteps
-  :diagram="diagram"
-  :steps="3"
-  :current-step="currentStep"
-  current-step-css="filter: drop-shadow(0 0 4px gold);"
-  current-step-edge-css="stroke: gold; stroke-width: 4px;"
-/>
-```
-
-CSS is applied after rendering, only to the current step's SVG node shapes and
-edge paths, not node labels or arrowhead markers. Declarations are applied inline
-with `!important` to override Mermaid styling. Clearing a CSS prop restores the
-original styles; moving steps or rerendering reapplies CSS to the new current
-step only. Edge CSS supports automatic IDs and manual `class customId stepNE`
+Edge styles support automatic IDs and manual `class customId stepNE`
 mappings, including when `edgesPerStep` is `0`. Invalid CSS declarations are
 ignored by the browser's CSS parser. Treat CSS strings as trusted input, just
 like diagram content.
 
 Mermaid edge IDs must be unique within the diagram. Use a different suffix for
-each edge in the same step; all configured IDs are automatically assigned to the shared
-`stepNE` class. Only use the IDs you need; unused mappings add no nodes or edges.
+each edge in the same step; all configured IDs are automatically treated as
+edges of step `N`. Only use the IDs you need; unused IDs have no effect.
 The IDs are case-sensitive, with an uppercase `E` and lowercase suffixes.
 
 Pass `:edges-per-step="16"` to map the base ID plus `a` through `o`, or use a
 larger count as needed. Suffixes continue `a` ... `z`, `aa`, `ab`, ...; for
 example, `28` includes `stepNEaa`. The count includes the unsuffixed base ID.
-Changing this prop regenerates the mappings. `0` disables automatic edge
-mappings while retaining node and edge class opacity definitions. Invalid
+Changing this prop updates the styled edges. `0` disables automatic edge
+mappings while keeping node opacity and manual edge mappings. Invalid
 counts (negative, fractional, or non-finite) raise a `RangeError`.
 
 ```vue
-<VueMermaidSteps :diagram="diagram" :steps="3" :edges-per-step="16" />
+<MermaidSteps :diagram="diagram" :steps="3" :edges-per-step="16" />
 ```
 
 For example, two branches can reveal together without manual `class` mappings:
@@ -194,29 +181,33 @@ flowchart LR
     Backend step3Ea@--> Ship
 ```
 
-The component appends edge `class` mappings and `classDef` opacity declarations
-for every configured step. IDs beyond `edgesPerStep` are not automatically mapped.
-Existing custom edge IDs and manual `class customId stepNE` mappings still work.
+IDs beyond `edgesPerStep` are not automatically mapped. Edges with other IDs can
+be assigned to a step with a manual `class customId stepNE` statement; the
+component reads these statements from the diagram source.
 
-Existing colors and other class styles are preserved unless overridden by the
-custom style props; step opacity defaults to the component's generated value.
-Supply a complete, valid Mermaid diagram, ending outside any
-subgraph, comment or directive. Classes beyond the configured `steps` are not
-modified.
+### How styles are applied
+
+Mermaid renders the `diagram` source exactly as given. The component then sets
+step opacity and custom styles as inline `!important` styles on the rendered SVG
+elements, which is required to override Mermaid's own inlined `classDef` styles.
+Original inline styles are restored before styles are reapplied, so existing
+colors and other class styles are preserved unless overridden by the custom
+style props. Classes beyond the configured `steps` are not modified.
 
 ### Renderer options and events
 
 Attributes such as `class` and `style` are applied to the diagram's wrapper
-element. The `options` prop is merged over the defaults and passed to
-`mermaid.initialize`; changing it re-renders the diagram. The component emits:
+element. The `options` prop is passed to `mermaid.initialize`. The diagram is
+re-rendered only when the `diagram` source or the `options` values change; a new
+`options` object with the same values does not re-render. The component emits:
 
-- `rendered` after a new SVG has been inserted;
+- `rendered` after a new SVG has been inserted and step styles applied;
 - `parse-error` with the error thrown by Mermaid when a diagram cannot be rendered.
 
 For example:
 
 ```vue
-<VueMermaidSteps
+<MermaidSteps
   :diagram="diagram"
   :steps="3"
   :current-step="currentStep"
@@ -227,8 +218,8 @@ For example:
 
 On errors, the previously rendered diagram stays visible. Handle `parse-error`
 for custom error reporting. Mermaid `click` callbacks are not wired to Vue
-events. Only render diagram content from sources you trust; the default
-`securityLevel: 'loose'` can be overridden with `options`.
+events. Only render diagram content from sources you trust; Mermaid's
+`securityLevel` can be configured with `options`.
 
 ## Development
 
@@ -245,9 +236,9 @@ pnpm run build
 - `pnpm run test:watch` runs tests in watch mode.
 - `pnpm run build` creates an ESM library and TypeScript declarations in `dist/`.
 - Vue and Mermaid are externalized from the build.
-- Component tests stub the internal Mermaid renderer to verify source generation,
-  prop reactivity, attribute forwarding, and events without coupling to SVG
-  layout; renderer tests mock Mermaid to cover rendering, errors, and stale renders.
+- Component tests mock Mermaid with an SVG fixture that mirrors Mermaid's output
+  structure to verify applied step styles, prop reactivity, re-render rules,
+  attribute forwarding, errors, and events without coupling to SVG layout.
 - Playground tests cover editing, step controls, validation, and error recovery.
 
 ## GitHub build
@@ -261,11 +252,11 @@ and requires no registry credentials.
 
 The [playground](./playground/App.vue) includes an editable Mermaid source,
 step-count input, current-step and inactive-opacity sliders, previous/next and hide/show controls,
-four Mermaid style inputs and two current-step CSS inputs below the chart,
+four CSS style inputs below the chart,
 resettable example, and explicit
 validation/rendering errors. Source changes are applied with **Apply diagram**;
 step, opacity, and style changes update the preview immediately. Style inputs
-accept comma-separated Mermaid declarations and are reflected in the usage
+accept semicolon-separated CSS declarations and are reflected in the usage
 example. Clear them to restore default styling, or use **Reset example** to
 reset all controls.
 

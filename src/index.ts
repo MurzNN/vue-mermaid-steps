@@ -1,1 +1,1 @@
-export { default, default as VueMermaidSteps } from './VueMermaidSteps.vue'
+export { default, default as MermaidSteps } from './MermaidSteps.vue'

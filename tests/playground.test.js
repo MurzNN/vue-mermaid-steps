@@ -1,15 +1,14 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { enableAutoUnmount, mount } from '@vue/test-utils'
 import App from '../playground/App.vue'
-import VueMermaidSteps from '../src'
+import MermaidSteps from '../src'
 
 vi.mock('../src', () => ({
   default: {
-    name: 'VueMermaidSteps',
+    name: 'MermaidSteps',
     props: [
       'diagram', 'steps', 'currentStep', 'inactiveOpacity', 'currentStepStyle', 'dimmedStepsStyle',
-      'currentStepEdgeStyle', 'dimmedStepsEdgeStyle',
-      'currentStepCss', 'currentStepEdgeCss', 'options',
+      'currentStepEdgeStyle', 'dimmedStepsEdgeStyle', 'options',
     ],
     emits: ['parse-error', 'rendered'],
     template: '<div />',
@@ -34,7 +33,7 @@ describe('playground', () => {
 
   it('updates inactive opacity live and resets it with the example', async () => {
     const wrapper = mount(App)
-    const preview = wrapper.findComponent(VueMermaidSteps)
+    const preview = wrapper.findComponent(MermaidSteps)
     expect(preview.props('inactiveOpacity')).toBe(0.2)
     await wrapper.get('#inactive-opacity').setValue('0.5')
     expect(preview.props('inactiveOpacity')).toBe(0.5)
@@ -46,10 +45,10 @@ describe('playground', () => {
 
   it('updates custom styles live, includes them in usage, and supports clearing and reset', async () => {
     const wrapper = mount(App)
-    const preview = wrapper.findComponent(VueMermaidSteps)
+    const preview = wrapper.findComponent(MermaidSteps)
     expect(preview.props()).toMatchObject({ currentStepStyle: '', dimmedStepsStyle: '' })
-    const currentStyle = 'fill:#ffe08a,stroke-width:3px'
-    const dimmedStyle = 'opacity:0.1'
+    const currentStyle = 'fill: #ffe08a; stroke-width: 3px'
+    const dimmedStyle = 'opacity: 0.1'
     await wrapper.get('#current-step-style').setValue(currentStyle)
     await wrapper.get('#dimmed-steps-style').setValue(dimmedStyle)
     expect(preview.props()).toMatchObject({
@@ -77,12 +76,12 @@ describe('playground', () => {
 
   it('clears render errors after corrected styles render successfully', async () => {
     const wrapper = mount(App)
-    const preview = wrapper.findComponent(VueMermaidSteps)
+    const preview = wrapper.findComponent(MermaidSteps)
     await wrapper.get('#current-step-style').setValue('invalid style')
     preview.vm.$emit('parse-error', new Error('Invalid style'))
     await wrapper.vm.$nextTick()
     expect(wrapper.get('[role="alert"]').text()).toContain('Invalid style')
-    await wrapper.get('#current-step-style').setValue('fill:red')
+    await wrapper.get('#current-step-style').setValue('fill: red')
     preview.vm.$emit('rendered')
     await wrapper.vm.$nextTick()
     expect(wrapper.find('[role="alert"]').exists()).toBe(false)
@@ -93,20 +92,18 @@ describe('playground', () => {
     const chart = wrapper.get('.diagram-preview').element
     const controls = wrapper.get('.style-controls')
     expect(chart.compareDocumentPosition(controls.element) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
-    expect(controls.findAll('input[type="text"]')).toHaveLength(6)
+    expect(controls.findAll('input[type="text"]')).toHaveLength(4)
     expect(wrapper.find('.step-controls input[type="text"]').exists()).toBe(false)
   })
 
   it.each([
-    ['currentStepStyle', 'current-step-style', 'fill:red'],
-    ['currentStepEdgeStyle', 'current-step-edge-style', 'stroke:green'],
-    ['dimmedStepsStyle', 'dimmed-steps-style', 'opacity:0.1'],
-    ['dimmedStepsEdgeStyle', 'dimmed-steps-edge-style', 'opacity:0.3'],
-    ['currentStepCss', 'current-step-css', 'filter: drop-shadow(0 0 4px gold);'],
-    ['currentStepEdgeCss', 'current-step-edge-css', 'stroke: gold; stroke-width: 4px;'],
+    ['currentStepStyle', 'current-step-style', 'fill: red; filter: drop-shadow(0 0 4px gold);'],
+    ['currentStepEdgeStyle', 'current-step-edge-style', 'stroke: gold; stroke-width: 4px;'],
+    ['dimmedStepsStyle', 'dimmed-steps-style', 'opacity: 0.1'],
+    ['dimmedStepsEdgeStyle', 'dimmed-steps-edge-style', 'opacity: 0.3; stroke: #999'],
   ])('updates %s live, includes it in usage, and clears it on reset', async (prop, id, style) => {
     const wrapper = mount(App)
-    const preview = wrapper.findComponent(VueMermaidSteps)
+    const preview = wrapper.findComponent(MermaidSteps)
     expect(preview.props(prop)).toBe('')
     await wrapper.get(`#${id}`).setValue(style)
     expect(preview.props(prop)).toBe(style)
@@ -124,7 +121,7 @@ describe('playground', () => {
 
   it('reveals steps with buttons and the slider, respecting boundaries', async () => {
     const wrapper = mount(App)
-    const preview = wrapper.findComponent(VueMermaidSteps)
+    const preview = wrapper.findComponent(MermaidSteps)
     expect(preview.props('currentStep')).toBe(1)
     await button(wrapper, 'Next').trigger('click')
     expect(preview.props('currentStep')).toBe(2)
@@ -142,7 +139,7 @@ describe('playground', () => {
 
   it('applies edited source and clamps the current step to a reduced count', async () => {
     const wrapper = mount(App)
-    const preview = wrapper.findComponent(VueMermaidSteps)
+    const preview = wrapper.findComponent(MermaidSteps)
     const source = 'flowchart TD\n  A --> B:::step1'
     await button(wrapper, 'Show all').trigger('click')
     await wrapper.get('#diagram-source').setValue(source)
@@ -158,7 +155,7 @@ describe('playground', () => {
     const wrapper = mount(App)
     await wrapper.get('#step-count').setValue('0')
     await wrapper.get('form').trigger('submit')
-    expect(wrapper.findComponent(VueMermaidSteps).props()).toMatchObject({
+    expect(wrapper.findComponent(MermaidSteps).props()).toMatchObject({
       steps: 0,
       currentStep: 0,
     })
@@ -170,21 +167,21 @@ describe('playground', () => {
     await wrapper.get('#step-count').setValue(value)
     await wrapper.get('form').trigger('submit')
     expect(wrapper.get('[role="alert"]').text()).toContain('non-negative whole number')
-    expect(wrapper.findComponent(VueMermaidSteps).props('steps')).toBe(3)
+    expect(wrapper.findComponent(MermaidSteps).props('steps')).toBe(3)
   })
 
   it('rejects empty diagrams without replacing the preview', async () => {
     const wrapper = mount(App)
-    const original = wrapper.findComponent(VueMermaidSteps).props('diagram')
+    const original = wrapper.findComponent(MermaidSteps).props('diagram')
     await wrapper.get('#diagram-source').setValue(' ')
     await wrapper.get('form').trigger('submit')
     expect(wrapper.get('[role="alert"]').text()).toContain('Enter Mermaid diagram code')
-    expect(wrapper.findComponent(VueMermaidSteps).props('diagram')).toBe(original)
+    expect(wrapper.findComponent(MermaidSteps).props('diagram')).toBe(original)
   })
 
   it('reports Mermaid errors and resets the complete example', async () => {
     const wrapper = mount(App)
-    const preview = wrapper.findComponent(VueMermaidSteps)
+    const preview = wrapper.findComponent(MermaidSteps)
     const original = preview.props('diagram')
     await wrapper.get('#diagram-source').setValue('not a valid diagram')
     await wrapper.get('form').trigger('submit')
