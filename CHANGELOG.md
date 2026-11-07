@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.3.0](https://github.com/MurzNN/vue-mermaid-steps/compare/v0.2.0...v0.3.0) (2026-11-07)
+
+### ⚠ BREAKING CHANGES
+
+* simplify MermaidSteps rendering and CSS styling API
+* the `node-click` event is removed and Mermaid `click`
+  callbacks are no longer wired to Vue events. `options` is now a declared
+  prop and changing it re-renders the diagram.
+
+### Features
+
+* render with Mermaid 12 directly instead of vue-mermaid-string ([9d3772d](https://github.com/MurzNN/vue-mermaid-steps/commit/9d3772d0972b66ca31bb9a001d38e5f50a189a33))
+* simplify MermaidSteps rendering and CSS styling API ([2b9c36f](https://github.com/MurzNN/vue-mermaid-steps/commit/2b9c36f7388d35d91c07308c28763736a794666e))
+
 Release notes are generated from Conventional Commits by release-it.
 
 ## [0.2.0](https://github.com/MurzNN/vue-mermaid-steps/compare/v0.1.0...v0.2.0) (2026-11-03)
